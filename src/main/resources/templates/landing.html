@@ -3,12 +3,25 @@
       xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
     <head>
         <title>Landing!</title>
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            function redirectToMutum() {
+                var token = [[${token}]];
+                console.log("Token: " + token);
+                window.localStorage.setItem('auth_token', token);
+                window.location = "http://alpha-website.s3-website.eu-central-1.amazonaws.com/";
+            }
+            /*]]>*/
+        </script>
     </head>
     <body>
         <h1>You are logged as <span th:text="${username}">null</span>!</h1>
         <p>
             <a th:href="@{/saml/logout}">Global Logout</a><br/>
     		<a th:href="@{/saml/logout?local=true}">Local Logout</a>
+        </p>
+        <p>
+            <a href="javascript:redirectToMutum();">Go to Mutum</a><br/>
         </p>
     </body>
 </html>

@@ -16,11 +16,7 @@
 
 package com.vdenotaris.spring.boot.security.saml.web.config;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
@@ -30,6 +26,9 @@ import org.apache.velocity.app.VelocityEngine;
 import org.opensaml.saml2.metadata.provider.HTTPMetadataProvider;
 import org.opensaml.saml2.metadata.provider.MetadataProvider;
 import org.opensaml.saml2.metadata.provider.MetadataProviderException;
+import org.opensaml.saml2.metadata.provider.ResourceBackedMetadataProvider;
+import org.opensaml.util.resource.ClasspathResource;
+import org.opensaml.util.resource.ResourceException;
 import org.opensaml.xml.parse.ParserPool;
 import org.opensaml.xml.parse.StaticBasicParserPool;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -272,11 +271,48 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     
     @Bean
     @Qualifier("idp-ssocircle")
-    public ExtendedMetadataDelegate ssoCircleExtendedMetadataProvider() 
-    		throws MetadataProviderException {	
+    public ExtendedMetadataDelegate ssoCircleExtendedMetadataProvider()
+            throws MetadataProviderException {
     	@SuppressWarnings({ "deprecation"})
-    	HTTPMetadataProvider httpMetadataProvider 
+    	HTTPMetadataProvider httpMetadataProvider
     		= new HTTPMetadataProvider("https://idp.ssocircle.com/idp-meta.xml", 5000);
+    	httpMetadataProvider.setParserPool(parserPool());
+    	ExtendedMetadataDelegate extendedMetadataDelegate =
+    			new ExtendedMetadataDelegate(httpMetadataProvider, extendedMetadata());
+    	extendedMetadataDelegate.setMetadataTrustCheck(false);
+    	extendedMetadataDelegate.setMetadataRequireSignature(false);
+    	return extendedMetadataDelegate;
+
+//        Timer timer = new Timer();
+//        org.opensaml.util.resource.Resource resource = null;
+//        try {
+//            resource = new ClasspathResource("/saml/metadata_mutum_HOM_gaia.xml");
+//        } catch (ResourceException e) {
+//            e.printStackTrace();
+//            throw new RuntimeException(e);
+//        }
+//        ResourceBackedMetadataProvider httpMetadataProvider = new ResourceBackedMetadataProvider(timer, resource);
+//    	httpMetadataProvider.setParserPool(parserPool());
+//    	ExtendedMetadataDelegate extendedMetadataDelegate =
+//    			new ExtendedMetadataDelegate(httpMetadataProvider, extendedMetadata());
+//    	extendedMetadataDelegate.setMetadataTrustCheck(false);
+//    	extendedMetadataDelegate.setMetadataRequireSignature(false);
+//    	return extendedMetadataDelegate;
+    }
+
+    @Bean
+    @Qualifier("idp-ssosg")
+    public ExtendedMetadataDelegate ssoSGExtendedMetadataProvider()
+            throws MetadataProviderException {
+        Timer timer = new Timer();
+        org.opensaml.util.resource.Resource resource = null;
+        try {
+            resource = new ClasspathResource("/saml/metadata_mutum_HOM_gaia.xml");
+        } catch (ResourceException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+        ResourceBackedMetadataProvider httpMetadataProvider = new ResourceBackedMetadataProvider(timer, resource);
     	httpMetadataProvider.setParserPool(parserPool());
     	ExtendedMetadataDelegate extendedMetadataDelegate =
     			new ExtendedMetadataDelegate(httpMetadataProvider, extendedMetadata());
@@ -287,12 +323,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
  
     // IDP Metadata configuration - paths to metadata of IDPs in circle of trust
     // is here
-    // Do no forget to call iniitalize method on providers
+    // Do no forget to call initialize method on providers
     @Bean
     @Qualifier("metadata")
     public CachingMetadataManager metadata() throws MetadataProviderException {
         List<MetadataProvider> providers = new ArrayList<MetadataProvider>();
         providers.add(ssoCircleExtendedMetadataProvider());
+        providers.add(ssoSGExtendedMetadataProvider());
         return new CachingMetadataManager(providers);
     }
  
@@ -300,7 +337,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public MetadataGenerator metadataGenerator() {
         MetadataGenerator metadataGenerator = new MetadataGenerator();
-        metadataGenerator.setEntityId("com:vdenotaris:spring:sp");
+        metadataGenerator.setEntityId("com:mutum:server:sp");
         metadataGenerator.setExtendedMetadata(extendedMetadata());
         metadataGenerator.setIncludeDiscoveryExtension(false);
         metadataGenerator.setKeyManager(keyManager()); 

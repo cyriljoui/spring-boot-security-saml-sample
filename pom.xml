@@ -18,7 +18,7 @@
 		configuration (Java Configuration). Thymeleaf is also used as template engine.
 	</description>
 	<url>https://github.com/vdenotaris/spring-boot-security-saml-sample</url>
-	
+
 	<developers>
 		<developer>
 			<id>vdenotaris</id>
@@ -47,6 +47,8 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<start-class>com.vdenotaris.spring.boot.security.saml.web.Application</start-class>
+		<jjwt.version>0.6.0</jjwt.version>
+		<lombok.version>1.16.6</lombok.version>
 	</properties>
 
 	<parent>
@@ -83,6 +85,17 @@
 			<groupId>org.springframework.security.extensions</groupId>
 			<artifactId>spring-security-saml2-core</artifactId>
 			<version>1.0.1.RELEASE</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>${lombok.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt</artifactId>
+			<version>${jjwt.version}</version>
 		</dependency>
 	</dependencies>
 	
