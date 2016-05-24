@@ -8,9 +8,18 @@
             function redirectToMutum() {
                 var token = [[${token}]];
                 console.log("Token: " + token);
-                window.localStorage.setItem('auth_token', token);
-                window.location = "http://alpha-website.s3-website.eu-central-1.amazonaws.com/";
+                //window.localStorage.setItem('auth_token', token);
+                // http://alpha-website.s3-website.eu-central-1.amazonaws.com/?jwtsso=eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJjeXJpbC5qb3VpQGdtYWlsLmNvbSIsInJvbGVzIjpbIlVTRVIiXSwiZXhwIjoxNDY1NzYxMTE1fQ.wotXaQHjl9ltL4cGIul7mpqCrHQ4U7_ms7r1CDCBJa_lpCdUl-qS4mNJ3DjuYUv181UYg2aEkzQvb-t9Yy50tA#/signin?redirect-url=%252Fhome
+                window.location = "http://alpha.empr1te.com/?jwtsso=" + token;
             }
+
+            function redirectToMutumGood() {
+                var token = [[${token}]];
+                console.log("Token: " + token);
+                window.localStorage.setItem('auth_token', token);
+                window.location = "http://alpha.empr1te.com/";
+            }
+            //setTimeout(redirectToMutum, 5000);
             /*]]>*/
         </script>
     </head>
@@ -21,7 +30,8 @@
     		<a th:href="@{/saml/logout?local=true}">Local Logout</a>
         </p>
         <p>
-            <a href="javascript:redirectToMutum();">Go to Mutum</a><br/>
+            <a href="javascript:redirectToMutum();">Go to Mutum (bad redirect)</a><br/>
+            <a href="javascript:redirectToMutumGood();">Go to Mutum (good redirect)</a><br/>
         </p>
     </body>
 </html>

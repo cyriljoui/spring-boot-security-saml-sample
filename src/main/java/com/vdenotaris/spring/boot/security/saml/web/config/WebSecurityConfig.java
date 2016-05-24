@@ -18,6 +18,7 @@ package com.vdenotaris.spring.boot.security.saml.web.config;
 
 import java.util.*;
 
+import com.vdenotaris.spring.boot.security.saml.web.controllers.InternalForwardRequestAwareAuthenticationSuccessHandler;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.protocol.Protocol;
@@ -70,6 +71,7 @@ import org.springframework.security.saml.processor.HTTPRedirectDeflateBinding;
 import org.springframework.security.saml.processor.HTTPSOAP11Binding;
 import org.springframework.security.saml.processor.SAMLBinding;
 import org.springframework.security.saml.processor.SAMLProcessorImpl;
+import org.springframework.security.saml.storage.SAMLMessageStorageFactory;
 import org.springframework.security.saml.trust.httpclient.TLSProtocolConfigurer;
 import org.springframework.security.saml.trust.httpclient.TLSProtocolSocketFactory;
 import org.springframework.security.saml.util.VelocityFactory;
@@ -147,7 +149,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     // Provider of default SAML Context
     @Bean
     public SAMLContextProviderImpl contextProvider() {
-        return new SAMLContextProviderImpl();
+        SAMLContextProviderImpl samlContextProvider = new SAMLContextProviderImpl();
+        SAMLMessageStorageFactory inMemoryStorageFactory = new InMemorySAMLMessageStorageFactory();
+        samlContextProvider.setStorageFactory(inMemoryStorageFactory);
+        return samlContextProvider;
     }
  
     // Initialization of OpenSAML library
@@ -200,6 +205,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     // Central storage of cryptographic keys
     @Bean
     public KeyManager keyManager() {
+//        DefaultResourceLoader loader = new DefaultResourceLoader();
+//        Resource storeFile = loader
+//                .getResource("classpath:/saml/mutumSamlKeystore.jks");
+//        String storePass = "nalle123";
+//        Map<String, String> passwords = new HashMap<String, String>();
+//        passwords.put("selfsigned", "mutumalpha");
+//        String defaultKey = "selfsigned";
+//        return new JKSKeyManager(storeFile, storePass, passwords, defaultKey);
         DefaultResourceLoader loader = new DefaultResourceLoader();
         Resource storeFile = loader
                 .getResource("classpath:/saml/samlKeystore.jks");
@@ -340,7 +353,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         metadataGenerator.setEntityId("com:mutum:server:sp");
         metadataGenerator.setExtendedMetadata(extendedMetadata());
         metadataGenerator.setIncludeDiscoveryExtension(false);
-        metadataGenerator.setKeyManager(keyManager()); 
+        metadataGenerator.setKeyManager(keyManager());
+        metadataGenerator.setEntityBaseURL("http://alpha.empr1te.com");
         return metadataGenerator;
     }
  
@@ -353,11 +367,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
      
     // Handler deciding where to redirect user after successful login
     @Bean
-    public SavedRequestAwareAuthenticationSuccessHandler successRedirectHandler() {
-        SavedRequestAwareAuthenticationSuccessHandler successRedirectHandler =
-                new SavedRequestAwareAuthenticationSuccessHandler();
-        successRedirectHandler.setDefaultTargetUrl("/landing");
-        return successRedirectHandler;
+    public InternalForwardRequestAwareAuthenticationSuccessHandler successRedirectHandler() {
+        InternalForwardRequestAwareAuthenticationSuccessHandler successHandler = new InternalForwardRequestAwareAuthenticationSuccessHandler();
+        return successHandler;
+//        SavedRequestAwareAuthenticationSuccessHandler successRedirectHandler =
+//                new SavedRequestAwareAuthenticationSuccessHandler();
+//        successRedirectHandler.setDefaultTargetUrl("/landing");
+//        return successRedirectHandler;
     }
     
 	// Handler deciding where to redirect user after failed login
